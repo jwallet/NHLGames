@@ -246,7 +246,7 @@
     <comment>Game panel</comment>
   </data>
   <data name="lblOutput" xml:space="preserve">
-    <value>Save as</value>
+    <value>Output</value>
     <comment>Settings tab</comment>
   </data>
   <data name="lblPlayer" xml:space="preserve">
@@ -971,6 +971,10 @@
   </data>
   <data name="lblServerDown" xml:space="preserve">
     <value>Server unavailable</value>
+    <comment>Game panel</comment>
+  </data>
+  <data name="tipRecap" xml:space="preserve">
+    <value>Recap</value>
     <comment>Game panel</comment>
   </data>
 </root>

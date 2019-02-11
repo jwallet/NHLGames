@@ -471,6 +471,10 @@
   <ItemGroup>
     <EmbeddedResource Include="nhlgames.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="res\images\recap_d.png" />
+    <EmbeddedResource Include="res\images\recap_l.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

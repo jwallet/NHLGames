@@ -754,7 +754,11 @@
     <comment>Game panel</comment>
   </data>
   <data name="lblOutput" xml:space="preserve">
-    <value>Enregistrer sous</value>
+    <value>Sauvegarde</value>
     <comment>Settings tab</comment>
+  </data>
+  <data name="tipRecap" xml:space="preserve">
+    <value>Résumé</value>
+    <comment>Game panel</comment>
   </data>
 </root>

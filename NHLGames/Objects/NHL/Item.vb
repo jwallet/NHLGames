@@ -28,5 +28,12 @@ Namespace Objects.NHL
                 Return If(feedName.Equals(String.Empty), mediaFeedType, feedName)
             End Get
         End Property
+
+        Public ReadOnly Property recapLink As String
+            Get
+                Dim recap = playbacks.Where(Function(x) x.name.Contains("HTTP_CLOUD_WIRED")).OrderByDescending(Function(y) y.name.Length).First()
+                Return If(recap Is Nothing, String.Empty, recap.url)
+            End Get
+        End Property
     End Class
 End Namespace

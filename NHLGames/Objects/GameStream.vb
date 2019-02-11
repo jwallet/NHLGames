@@ -33,7 +33,7 @@ Namespace Objects
             If type = StreamTypeEnum.Unknown Then
                 Me.StreamTypeSelected = streamTypeSelected
             End If
-            CdnParameter = If(game.IsOffTheAir,
+            CdnParameter = If(game.IsEnded,
                               CdnTypeEnum.Akc,
                               ApplicationSettings.Read(Of GameWatchArguments)(SettingsEnum.DefaultWatchArgs,
                                                                                New GameWatchArguments).Cdn)

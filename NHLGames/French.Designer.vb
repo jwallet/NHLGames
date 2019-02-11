@@ -767,7 +767,7 @@ Namespace My.Resources
         End Property
         
         '''<summary>
-        '''  Looks up a localized string similar to Enregistrer sous.
+        '''  Looks up a localized string similar to Sauvegarde.
         '''</summary>
         Friend Shared ReadOnly Property lblOutput() As String
             Get
@@ -1465,6 +1465,15 @@ Namespace My.Resources
         Friend Shared ReadOnly Property tipMonthRight() As String
             Get
                 Return ResourceManager.GetString("tipMonthRight", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Résumé.
+        '''</summary>
+        Friend Shared ReadOnly Property tipRecap() As String
+            Get
+                Return ResourceManager.GetString("tipRecap", resourceCulture)
             End Get
         End Property
         
