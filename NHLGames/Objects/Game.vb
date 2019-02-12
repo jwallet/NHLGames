@@ -40,6 +40,12 @@ Namespace Objects
             Return String.Format(NHLGamesMetro.RmText.GetString("msgTeamVsTeam"), HomeTeam, AwayTeam)
         End Function
 
+        Public ReadOnly Property IsTodaysGame As Boolean
+            Get
+                Return GameState < GameStateEnum.StreamEnded AndAlso GameDate.ToLocalTime() <= Date.Today.AddDays(1)
+            End Get
+        End Property
+
         Public ReadOnly Property IsLive As Boolean
             Get
                 Return GameState.Equals(GameStateEnum.InProgress) OrElse

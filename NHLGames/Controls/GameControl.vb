@@ -93,7 +93,7 @@ Namespace Controls
                 lblHomeScore.Visible = showScores
                 lblAwayScore.Visible = showScores
                 lblGameStatus.Visible = Not showScores
-                btnRecap.Visible = _game.Recap.StreamUrl <> String.Empty
+                btnRecap.Visible = _game.Recap?.StreamUrl <> String.Empty
                 tt.SetToolTip(btnRecap, NHLGamesMetro.RmText.GetString("tipRecap"))
 
                 If _game.HomeScore < _game.AwayScore Then
@@ -276,14 +276,14 @@ Namespace Controls
                 Next
             End If
 
-            If Not _game.IsUnplayable Then
-                If _game.GameState < GameStateEnum.Ended And _game.GameDate.ToLocalTime() <= Date.Today.AddDays(1) Then
+            If _game.IsUnplayable Then
+                bpGameControl.BorderColour = Color.DarkOrange
+            Else
+                If _game.IsTodaysGame Then
                     bpGameControl.BorderColour = Color.FromArgb(255, 0, 170, 210)
                 Else
                     bpGameControl.BorderColour = Color.FromArgb(255, 100, 100, 100)
                 End If
-            Else
-                bpGameControl.BorderColour = Color.DarkOrange
             End If
 
             UpdateGame(_showScores, _showLiveScores, _showSeriesRecord, _showTeamCityAbr, _showLiveTime)
