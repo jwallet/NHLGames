@@ -1487,7 +1487,7 @@ Namespace My.Resources
         End Property
         
         '''<summary>
-        '''  Looks up a localized string similar to MLBAMProxy: Proxy is getting ready.
+        '''  Looks up a localized string similar to MLBAMProxy: Proxy {0} is getting ready.
         '''</summary>
         Friend Shared ReadOnly Property msgProxyStarting() As String
             Get

@@ -910,7 +910,7 @@
     <comment>Console</comment>
   </data>
   <data name="msgProxyStarting" xml:space="preserve">
-    <value>MLBAMProxy: Proxy is getting ready</value>
+    <value>MLBAMProxy: Proxy {0} is getting ready</value>
     <comment>Console</comment>
   </data>
   <data name="msgProxyGettingReady" xml:space="preserve">

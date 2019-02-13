@@ -4,6 +4,7 @@ Imports NHLGames.My.Resources
 Namespace Utilities
     Public Class Proxy
         Private _proxy As Process
+        Private _proxyVersion As Process
         Private const _stringToFind = "[MLBAMProxy] "
         Private const _exeName = "mlbamproxy.exe"
         Public ReadOnly port As String = ApplicationSettings.Read(Of String)(SettingsEnum.ProxyPort, "17070")
@@ -12,6 +13,28 @@ Namespace Utilities
         Private _pathToProxy As String = String.Empty
 
         Private Sub StartProxy()
+            _proxyVersion = New Process() With {
+                .StartInfo = New ProcessStartInfo With {
+                    .FileName = _pathToProxy,
+                    .Arguments = $"-v",
+                    .UseShellExecute = False,
+                    .RedirectStandardOutput = True,
+                    .CreateNoWindow = True
+                },
+                .EnableRaisingEvents = True
+            }
+
+            Try
+                _proxyVersion.Start()
+
+                While (_proxyVersion.StandardOutput.EndOfStream = False)
+                    Console.WriteLine(English.msgProxyStarting, _proxyVersion.StandardOutput.ReadLine())
+                End While
+            Catch ex As Exception
+                Console.WriteLine(English.errorGeneral, $"Starting proxy", ex.Message)
+                Return
+            End Try
+
             _proxy = New Process() With {
                 .StartInfo = New ProcessStartInfo With {
                     .FileName = _pathToProxy,
@@ -23,7 +46,6 @@ Namespace Utilities
                 .EnableRaisingEvents = True
             }
 
-            Console.WriteLine(English.msgProxyStarting)
             InvokeElement.SetFormStatusLabel(NHLGamesMetro.RmText.GetString("msgProxyGettingReady"))
 
             If Not IsProxyFileFound() Then
@@ -31,7 +53,7 @@ Namespace Utilities
                 Return
             End If
 
-             Try
+            Try
                 _proxy.Start()
 
                 While (_proxy.StandardOutput.EndOfStream = False)
@@ -40,7 +62,7 @@ Namespace Utilities
                     Dim log = If(indexAfterMatch <> -1, line.Substring(indexAfterMatch + _stringToFind.Length), Nothing)
                     If log <> Nothing Then Console.WriteLine("MLBAMProxy: " & log)
                     If line.ToLower().Contains("proxy server listening") Then
-                        NHLGamesMetro.FormInstance.ProxyListening = Task.Run(Function() 
+                        NHLGamesMetro.FormInstance.ProxyListening = Task.Run(Function()
                                                                                  Return True
                                                                              End Function)
                     End If
