@@ -10,6 +10,7 @@ Namespace Objects
         Private _disposedValue As Boolean
 
         Public Property StreamsDict As Dictionary(Of StreamTypeEnum, GameStream)
+        Public Property Recap As GameStream
         Public Property StreamsUnknown As List(Of GameStream)
         Public Property GameId As String
         Public Property GameType As GameTypeEnum 'Get type of the game : 1 preseason, 2 regular, 3 series
@@ -39,6 +40,12 @@ Namespace Objects
             Return String.Format(NHLGamesMetro.RmText.GetString("msgTeamVsTeam"), HomeTeam, AwayTeam)
         End Function
 
+        Public ReadOnly Property IsTodaysGame As Boolean
+            Get
+                Return GameState < GameStateEnum.StreamEnded AndAlso GameDate.ToLocalTime() <= Date.Today.AddDays(1)
+            End Get
+        End Property
+
         Public ReadOnly Property IsLive As Boolean
             Get
                 Return GameState.Equals(GameStateEnum.InProgress) OrElse
@@ -50,8 +57,7 @@ Namespace Objects
 
         Public ReadOnly Property IsOffTheAir As Boolean
             Get
-                Return GameState.Equals(GameStateEnum.OffTheAir) OrElse
-                       GameState.Equals(GameStateEnum.StreamEnded)
+                Return GameState.Equals(GameStateEnum.OffTheAir)
             End Get
         End Property
 
@@ -64,6 +70,13 @@ Namespace Objects
         Public ReadOnly Property IsStreamable As Boolean
             Get
                 Return GameState > GameStateEnum.Pregame AndAlso GameState <= GameStateEnum.StreamEnded
+            End Get
+        End Property
+
+        Public ReadOnly Property IsEnded As Boolean
+            Get
+                Return GameState.Equals(GameStateEnum.OffTheAir) OrElse
+                       GameState.Equals(GameStateEnum.StreamEnded)
             End Get
         End Property
 

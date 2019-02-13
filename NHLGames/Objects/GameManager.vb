@@ -35,7 +35,7 @@ Namespace Objects
             Dim currentStreamIndex = 0
 
             Dim numberOfGames = (Convert.ToInt32(schedule.totalGames))
-            Dim numberOfStreams = If (schedule.date?.numberOfNHLTVFeeds, 0)
+            Dim numberOfStreams = If(schedule.date?.numberOfNHLTVFeeds, 0)
             If numberOfGames = 0 Then Return Nothing
 
             gamesArray = New Game(numberOfGames - 1) {}
@@ -50,19 +50,19 @@ Namespace Objects
                     .GameDate = game.gameDate.ToUniversalTime(), ' Must use universal time to always get correct date for stream
                     .GameId = game.gamePk.ToString(),
                     .GameType = Convert.ToInt16(GetChar(game.gamePk.ToString(), 6)) - 48,
-                    .Home = If (game.teams?.home?.team?.locationName, String.Empty),
-                    .HomeAbbrev = If (game.teams?.home?.team?.abbreviation, String.Empty),
-                    .HomeTeam = If (game.teams?.home?.team?.teamName, String.Empty),
-                    .Away = If (game.teams?.away?.team?.locationName, String.Empty),
-                    .AwayAbbrev = If (game.teams?.away?.team?.abbreviation, String.Empty),
-                    .AwayTeam = If (game.teams?.away?.team?.teamName, String.Empty),
+                    .Home = If(game.teams?.home?.team?.locationName, String.Empty),
+                    .HomeAbbrev = If(game.teams?.home?.team?.abbreviation, String.Empty),
+                    .HomeTeam = If(game.teams?.home?.team?.teamName, String.Empty),
+                    .Away = If(game.teams?.away?.team?.locationName, String.Empty),
+                    .AwayAbbrev = If(game.teams?.away?.team?.abbreviation, String.Empty),
+                    .AwayTeam = If(game.teams?.away?.team?.teamName, String.Empty),
                     .GameState = game.status.gameState,
                     .GameStateDetailed = game.status.detailedState
                 }
 
                 If currentGame.GameType = GameTypeEnum.Series Then
                     currentGame.SeriesGameNumber = game.seriesSummary?.gameNumber
-                    currentGame.SeriesGameStatus = If (game.seriesSummary?.seriesStatusShort, String.Empty)
+                    currentGame.SeriesGameStatus = If(game.seriesSummary?.seriesStatusShort, String.Empty)
                 End If
 
                 If currentGame.GameDate.AddDays(1) < Date.UtcNow AndAlso currentGame.GameState > 0 AndAlso currentGame.GameState < 7 Then
@@ -74,7 +74,7 @@ Namespace Objects
                 End If
 
                 If NHLGamesMetro.IsServerUp Then
-                    Dim progressPerStream = If(game.NHLTVFeeds.Count() > 0, Convert.ToInt32(progressPerGame / game.NHLTVFeeds.Count()), progressPerGame)
+                    Dim progressPerStream = If(game.numberOfNHLTVFeedsWithRecap <> 0, Convert.ToInt32(progressPerGame / game.numberOfNHLTVFeedsWithRecap), progressPerGame)
                     For Each feed In game.NHLTVFeeds
                         NHLGamesMetro.SpnLoadingValue += progressPerStream
                         Dim streamType As StreamTypeEnum = GetStreamType(feed.streamTypeSelected)
@@ -105,6 +105,11 @@ Namespace Objects
                         End If
                         currentStreamIndex += 1
                     Next
+
+                    If currentGame.IsEnded AndAlso game.numberOfRecapFeeds <> 0 Then
+                        currentGame.Recap = SetGameRecap(game)
+                        NHLGamesMetro.SpnLoadingValue += progressPerStream
+                    End If
                 End If
 
                 gamesArray(currentGameIndex) = currentGame
@@ -118,6 +123,15 @@ Namespace Objects
             End Try
 
             Return gamesArray
+        End Function
+
+        Private Shared Function SetGameRecap(currentGame As NHL.Game)
+            Dim recap = currentGame.RecapFeeds.First()
+            Return New GameStream With {
+                .Title = recap.title,
+                .StreamUrl = recap.recapLink,
+                .StreamTypeSelected = StreamTypeEnum.Unknown
+            }
         End Function
 
         Private Shared Async Function SetNewGameStream(currentGame As Game, innerStream As NHL.Item,

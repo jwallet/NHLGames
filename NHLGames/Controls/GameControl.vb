@@ -16,7 +16,7 @@ Namespace Controls
         Private ReadOnly _showTeamCityAbr As Boolean
         Private ReadOnly _showLiveTime As Boolean
         Private ReadOnly _broadcasters As Dictionary(Of String, String)
-        Public LiveReplayCode As LiveStatusCodeEnum = LiveStatusCodeEnum.Live
+        Public LiveReplayCode As LiveStatusCodeEnum
         Private _lnkUnknowns() As Button
         Private _themeChar = "l"
         Private _defaultBackColor = Color.FromArgb(224, 224, 224)
@@ -93,6 +93,8 @@ Namespace Controls
                 lblHomeScore.Visible = showScores
                 lblAwayScore.Visible = showScores
                 lblGameStatus.Visible = Not showScores
+                btnRecap.Visible = _game.Recap?.StreamUrl <> String.Empty
+                tt.SetToolTip(btnRecap, NHLGamesMetro.RmText.GetString("tipRecap"))
 
                 If _game.HomeScore < _game.AwayScore Then
                     lblHomeScore.ForeColor = Color.Gray
@@ -102,7 +104,7 @@ Namespace Controls
 
                 If showScores Then
                     lblPeriod.Text = gameState
-                    If Not String.Equals(_game.GamePeriod, $"3rd", StringComparison.CurrentCultureIgnoreCase) And _game.GamePeriod <> "" Then
+                    If Not String.Equals(_game.GamePeriod, $"3rd", StringComparison.CurrentCultureIgnoreCase) And _game.GamePeriod <> String.Empty Then
                         lblPeriod.Text = (gameState & $"/" &
                                           _game.GamePeriod.
                                           Replace($"OT", NHLGamesMetro.RmText.GetString("gamePeriodOt")).
@@ -274,20 +276,22 @@ Namespace Controls
                 Next
             End If
 
-            If Not _game.IsUnplayable Then
-                If _game.GameState < GameStateEnum.Ended And _game.GameDate.ToLocalTime() <= Date.Today.AddDays(1) Then
+            If _game.IsUnplayable Then
+                bpGameControl.BorderColour = Color.DarkOrange
+            Else
+                If _game.IsTodaysGame Then
                     bpGameControl.BorderColour = Color.FromArgb(255, 0, 170, 210)
                 Else
                     bpGameControl.BorderColour = Color.FromArgb(255, 100, 100, 100)
                 End If
-            Else
-                bpGameControl.BorderColour = Color.DarkOrange
             End If
 
             UpdateGame(_showScores, _showLiveScores, _showSeriesRecord, _showTeamCityAbr, _showLiveTime)
         End Sub
 
         Private Sub SetWholeGamePanel()
+            LiveReplayCode = If(_game.IsOffTheAir, LiveStatusCodeEnum.Replay, LiveStatusCodeEnum.Live)
+
             SetTeamLogo(picAway, $"{_game.AwayAbbrev}_{_themeChar}")
             SetTeamLogo(picHome, $"{_game.HomeAbbrev}_{_themeChar}")
 
@@ -399,6 +403,15 @@ Namespace Controls
             If Not args.Stream?.IsBroken Then Player.Watch(args)
         End Sub
 
+        Private Sub btnRecap_Click(sender As Object, e As EventArgs) Handles btnRecap.Click
+            Dim args = WatchArgs()
+            args.GameDate = _game.GameDate
+            args.Stream = _game.Recap
+            args.GameTitle = _game.AwayAbbrev & " @ " & _game.HomeAbbrev
+            args.GameIsOnAir = False
+            Player.Watch(args)
+        End Sub
+
         Private Sub lnkAway_Click(sender As Object, e As EventArgs) Handles lnkAway.Click
             WatchStream(StreamTypeEnum.Away)
         End Sub
@@ -471,6 +484,7 @@ Namespace Controls
                     If lnkStar IsNot Nothing Then lnkStar.Dispose()
                     If lblNotInSeason IsNot Nothing Then lblNotInSeason.Dispose()
                     If lblStreamStatus IsNot Nothing Then lblStreamStatus.Dispose()
+                    If btnRecap IsNot Nothing Then btnRecap.Dispose()
                     If bpGameControl IsNot Nothing Then
                         bpGameControl.Controls.Clear()
                         bpGameControl.Dispose()
@@ -496,7 +510,7 @@ Namespace Controls
                 flpStreams.BackColor = Color.FromArgb(80, 80, 80)
                 lblPeriod.BackColor = Color.FromArgb(80, 80, 80)
                 lblStreamStatus.BackColor = Color.FromArgb(80, 80, 80)
-                lblStreamStatus.ForeColor =  Color.LightGray
+                lblStreamStatus.ForeColor = Color.LightGray
                 lblAwayTeam.Theme = MetroThemeStyle.Dark
                 lblHomeTeam.Theme = MetroThemeStyle.Dark
                 lblGameStatus.Theme = MetroThemeStyle.Dark
@@ -505,6 +519,7 @@ Namespace Controls
                 lblHomeScore.ForeColor = Color.LightGray
                 lblNotInSeason.Theme = MetroThemeStyle.Dark
                 lblDivider.BackColor = Color.Black
+                btnRecap.FlatAppearance.BorderColor = Color.LightGray
                 For Each lnk In New Button() {lnkHome, lnkAway, lnkFrench, lnkNational, lnkEnd1, lnkEnd2, lnkRef, lnkStar, lnkThree, lnkSix}
                     lnk.FlatAppearance.BorderColor = Color.FromArgb(80, 80, 80)
                     lnk.FlatAppearance.MouseOverBackColor = Color.FromArgb(100, 100, 100)
@@ -524,6 +539,7 @@ Namespace Controls
             lnkStar.BackgroundImage = ImageFetcher.GetEmbeddedImage("cam_star")
             lnkThree.BackgroundImage = ImageFetcher.GetEmbeddedImage("cam3way")
             lnkSix.BackgroundImage = ImageFetcher.GetEmbeddedImage("cam6way")
+            btnRecap.BackgroundImage = ImageFetcher.GetEmbeddedImage($"recap_{_themeChar}")
         End Sub
     End Class
 End Namespace

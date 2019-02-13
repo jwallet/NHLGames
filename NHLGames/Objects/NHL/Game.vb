@@ -35,7 +35,14 @@ Namespace Objects.NHL
 
         Public ReadOnly Property numberOfRecapFeeds As Integer
             Get
-                Return If (content?.media IsNot Nothing, content.media.numberOfRecapFeeds, 0)
+                Return If(content?.media IsNot Nothing, content.media.numberOfRecapFeeds, 0)
+            End Get
+        End Property
+
+        Public ReadOnly Property numberOfNHLTVFeedsWithRecap As Integer
+            Get
+                Dim streams = numberOfRecapFeeds + numberOfNHLTVFeeds
+                Return If(streams > 0, numberOfNHLTVFeeds + 1, numberOfNHLTVFeeds)
             End Get
         End Property
 
