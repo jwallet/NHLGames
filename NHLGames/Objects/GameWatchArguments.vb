@@ -27,7 +27,7 @@ Namespace Objects
         Public Property StreamLiveReplay As LiveReplayEnum = LiveReplayEnum.StreamStarts
 
         Public Shared ReadOnly StreamerDefaultArgs As Dictionary(Of String, String) = New Dictionary(Of String, String)() From {
-            {"--hls-segment-threads", "4"}, {"--hls-segment-attempts", "30"}, {"--hls-segment-timeout", "60"}}
+            {"--hls-segment-threads", "2"}, {"--hls-segment-attempts", "9"}, {"--hls-segment-timeout", "10"}, {"--hls-timeout", "180"}}
 
         Public Shared ReadOnly MpvDefaultArgs As Dictionary(Of String, String) = New Dictionary(Of String, String)() From {
             {"--cache", "50000"}}
@@ -43,6 +43,10 @@ Namespace Objects
             Return OutputArgs(safeOutput)
         End Function
 
+        Private Function IsProxyNecessary() As Boolean
+            Return Not NHLGamesMetro.IsHostsRedirectionSet AndAlso Not Stream.Type.Equals(StreamTypeEnum.Recap)
+        End Function
+
         Private Function GetStreamQuality() As String
             Dim selectedQualities = ""
             Dim addQuality = Quality
@@ -56,7 +60,6 @@ Namespace Objects
         End Function
 
         Private Function OutputArgs(safeOutput As Boolean) As String
-
             If String.IsNullOrEmpty(PlayerPath) OrElse PlayerType.Equals(PlayerTypeEnum.None) Then _
                 Console.WriteLine(English.errorPlayerPathEmpty)
 
@@ -68,7 +71,8 @@ Namespace Objects
                 result = PlayerArgs() & ReplayArgs()
             End If
 
-            result &= StreamlinkHttpsProxyArgs() & RetryArgs()
+            If IsProxyNecessary() Then result &= StreamlinkHttpsProxyArgs()
+            result &= RetryArgs()
             If UseCustomStreamerArgs Then result &= CustomStreamerArgs
             If Not safeOutput Then result &= NhlCookieArgs()
             If Not safeOutput Then result &= UserAgentArgs()
@@ -86,17 +90,23 @@ Namespace Objects
                 Case PlayerTypeEnum.Mpv
                     args &= $"--force-window=immediate --title """"{title}"""" --user-agent=User-Agent=""""{Common.UserAgent}"""""
                 Case PlayerTypeEnum.Vlc
-                    args &= $"--meta-title """"{title}"""" {VlcHttpProxyArgs()}"
+                    args &= $"--meta-title """"{title}"""" "
+                    If IsProxyNecessary() Then args &= $"{VlcHttpProxyArgs()} "
                 Case PlayerTypeEnum.Mpc
             End Select
             Return $"--player ""{PlayerPath} {args} {literalPlayerArgs}"" "
         End Function
 
         Private Function ReplayArgs() As String
-            ' v1.3.2: Seeking through live game only works with mpv (presetHls)
-            Dim presetHls = If(PlayerType.Equals(PlayerTypeEnum.Mpv),
+            ' v1.4.0: Seeking through live game only works with mpv when Proxy is enabled
+            Dim hlsPlayersReady = If(IsProxyNecessary(),
+                New PlayerTypeEnum() {PlayerTypeEnum.Mpv},
+                New PlayerTypeEnum() {PlayerTypeEnum.Mpv, PlayerTypeEnum.Mpc})
+
+            Dim presetHls = If(hlsPlayersReady.Contains(PlayerType),
                                "--player-passthrough=hls ",
                                String.Empty)
+
             If GameIsOnAir Then
                 If Not StreamLiveReplayCode.Equals(LiveStatusCodeEnum.Live) Then
                     Return $"--hls-live-edge={ReplayMinutes()} "
@@ -127,15 +137,15 @@ Namespace Objects
         End Function
 
         Private Function StreamlinkHttpsProxyArgs() As String
-            Return String.Format("--https-proxy=""https://127.0.0.1:{0}/"" --http-proxy=""http://127.0.0.1:{0}/"" ", NHLGamesMetro.MLBAMProxy.port)
+            Return String.Format("--https-proxy=""https://127.0.0.1:{0}"" --http-proxy=""http://127.0.0.1:{0}"" ", NHLGamesMetro.MLBAMProxy.port)
         End Function
 
         Private Function VlcHttpProxyArgs() As String
-            Return String.Format("--http-proxy=""http://127.0.0.1:{0}/"" --http-reconnect --http-forward-cookies", NHLGamesMetro.MLBAMProxy.port)
+            Return String.Format("--http-proxy=""https://127.0.0.1:{0}"" --http-reconnect --http-forward-cookies", NHLGamesMetro.MLBAMProxy.port)
         End Function
 
         Private Function RetryArgs() As String
-            Return $"--retry-streams=1 --retry-open=3 --stream-types=hls "
+            Return $"--stream-types=hls "
         End Function
 
         Private Function NhlCookieArgs() As String
@@ -147,11 +157,11 @@ Namespace Objects
         End Function
 
         Private Function StreamLinkArgs() As String
-            Return $" ""hlsvariant://{Stream.StreamUrl.Replace("CDN", Cdn.ToString().ToLower())} "
+            Return $" ""hls://{Stream.StreamUrl.Replace("CDN", Cdn.ToString().ToLower())} "
         End Function
 
         Private Function StreamLinkCensoredArgs() As String
-            Return $" ""hlsvariant://{English.msgCensoredStream} "
+            Return $" ""hls://{English.msgCensoredStream} "
         End Function
 
         Private Function StreamBestQualityArgs() As String

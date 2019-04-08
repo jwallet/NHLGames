@@ -32,6 +32,7 @@
         MultiCam2
         RefCam
         StarCam
+        Recap
         Unknown
     End Enum
 

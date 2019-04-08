@@ -39,7 +39,8 @@ Public Class NHLGamesMetro
     Public Shared Tips As New Dictionary(Of Integer, String)
     Public Shared MLBAMProxy As Proxy
     Public Shared IsServerUp As Boolean = Nothing
-    Public ProxyListening As Task(Of Boolean) = Nothing
+    Public IsProxyListening As Task(Of Boolean) = Nothing
+    Public Shared IsHostsRedirectionSet As Boolean = False
 
     <SecurityPermission(SecurityAction.Demand, Flags:=SecurityPermissionFlag.ControlAppDomain)>
     Public Shared Sub Main()
@@ -79,7 +80,11 @@ Public Class NHLGamesMetro
         FlpCalendar = flpCalendarPanel
         InitializeForm.SetSettings()
 
-        MLBAMProxy = New Proxy()
+        If Proxy.TestHostsEntry() Then
+            IsHostsRedirectionSet = True
+        Else
+            MLBAMProxy = New Proxy()
+        End If
 
         Await Common.CheckAppCanRun()
 

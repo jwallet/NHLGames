@@ -24,13 +24,13 @@ Namespace Utilities
             End If
 
             Dim taskLaunchingStream = New Task(Async Sub()
-                                                    NHLGamesMetro.StreamStarted = True
-                                                    NHLGamesMetro.SpnStreamingValue = 1
-                                                    Thread.Sleep(100)
-                                                    Await Proxy.WaitToBeReady()
-                                                    LaunchingStream(args)
-                                                    Thread.Sleep(100)
-                                                    NHLGamesMetro.StreamStarted = False
+                                                   NHLGamesMetro.StreamStarted = True
+                                                   NHLGamesMetro.SpnStreamingValue = 1
+                                                   Thread.Sleep(100)
+                                                   If Not NHLGamesMetro.IsHostsRedirectionSet Then Await Proxy.WaitToBeReady()
+                                                   LaunchingStream(args)
+                                                   Thread.Sleep(100)
+                                                   NHLGamesMetro.StreamStarted = False
                                                End Sub)
 
             taskLaunchingStream.Start()

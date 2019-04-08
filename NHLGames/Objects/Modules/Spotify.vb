@@ -60,11 +60,11 @@ Namespace Objects.Modules
         End Function
 
         Private Sub NextSong()
-            If Not AnyMediaPlayer Then
-                SendActionKey(KeyNextSong)
-            Else
-                NativeMethods.PressKey(KeyVkNextSong)
+            If AnyMediaPlayer Then
                 Thread.Sleep(100)
+                NativeMethods.PressKey(KeyVkNextSong)
+            Else
+                SendActionKey(KeyNextSong)
             End If
         End Sub
 
@@ -80,39 +80,41 @@ Namespace Objects.Modules
         End Sub
 
         Private Sub Play()
-            If IsSpotifyPlaying() Then Return
-            If Not AnyMediaPlayer Then
-                SendActionKey(KeyPlayPause)
-            Else
+            If AnyMediaPlayer Then
+                Thread.Sleep(100)
                 NativeMethods.PressKey(KeyVkPlayPause)
+            Else
+                If IsSpotifyPlaying() Then Return
+                SendActionKey(KeyPlayPause)
             End If
         End Sub
 
         Private Sub Pause()
-            If Not IsSpotifyPlaying() Then Return
-            If Not AnyMediaPlayer Then
-                SendActionKey(KeyPlayPause)
-            Else
+            If AnyMediaPlayer Then
+                Thread.Sleep(100)
                 NativeMethods.PressKey(KeyVkPlayPause)
+            Else
+                If Not IsSpotifyPlaying() Then Return
+                SendActionKey(KeyPlayPause)
             End If
         End Sub
 
         Private Function IsItInitialized() As Boolean
-            If Not AnyMediaPlayer Then
-                Try
-                    Process.GetProcessById(_spotifyId)
-                Catch ex As Exception
-                    InvokeElement.ModuleSpotifyOff()
+            If AnyMediaPlayer Then Return _initialized
+            Try
+                Process.GetProcessById(_spotifyId)
+            Catch ex As Exception
+                InvokeElement.ModuleSpotifyOff()
                     _initialized = False
                 End Try
-            End If
             Return _initialized
         End Function
 
         Public Sub AdEnded() Implements IAdModule.AdEnded
             If Not IsItInitialized() Then Return
+            If AnyMediaPlayer Then Pause()
             If PlayNextSong Then NextSong()
-            Pause()
+            If Not AnyMediaPlayer Then Pause()
         End Sub
 
         Public Sub AdStarted() Implements IAdModule.AdStarted
@@ -125,6 +127,7 @@ Namespace Objects.Modules
                 _initialized = True
                 Return
             End If
+
             If Not SpotifyIsInstalled() Then
                 _stopIt = True
                 InvokeElement.ModuleSpotifyOff()

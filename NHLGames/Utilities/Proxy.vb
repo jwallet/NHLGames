@@ -1,14 +1,15 @@
 ﻿Imports System.IO
+Imports System.Net
 Imports NHLGames.My.Resources
 
 Namespace Utilities
     Public Class Proxy
         Private _proxy As Process
         Private _proxyVersion As Process
-        Private const _stringToFind = "[MLBAMProxy] "
-        Private const _exeName = "mlbamproxy.exe"
+        Private Const _stringToFind = "[MLBAMProxy] "
+        Private Const _exeName = "go-mlbam-proxy.exe"
         Public ReadOnly port As String = ApplicationSettings.Read(Of String)(SettingsEnum.ProxyPort, "17070")
-        Private ReadOnly _folderPath As String = Path.Combine(Application.StartupPath, "mlbamproxy")
+        Private ReadOnly _folderPath As String = Path.Combine(Application.StartupPath, "proxy")
 
         Private _pathToProxy As String = String.Empty
 
@@ -62,9 +63,9 @@ Namespace Utilities
                     Dim log = If(indexAfterMatch <> -1, line.Substring(indexAfterMatch + _stringToFind.Length), Nothing)
                     If log <> Nothing Then Console.WriteLine("MLBAMProxy: " & log)
                     If line.ToLower().Contains("proxy server listening") Then
-                        NHLGamesMetro.FormInstance.ProxyListening = Task.Run(Function()
-                                                                                 Return True
-                                                                             End Function)
+                        NHLGamesMetro.FormInstance.IsProxyListening = Task.Run(Function()
+                                                                                   Return True
+                                                                               End Function)
                     End If
                 End While
 
@@ -85,12 +86,24 @@ Namespace Utilities
             ' For proxy debug purpose, uncomment below, comment above
 
             'NHLGamesMetro.FormInstance.ProxyListening = Task.Run(Function()
-            'Return True
-            'End Function)
+            '                                                         Return True
+            '                                                     End Function)
         End Sub
 
+        Public Shared Function TestHostsEntry() As Boolean
+            Dim hasRedirection = False
+            If NHLGamesMetro.HostName.Equals(String.Empty) Then Return hasRedirection
+            Try
+                Dim serverIp = Dns.GetHostEntry(NHLGamesMetro.HostName).AddressList.First.ToString()
+                Dim resolvedIp = Dns.GetHostAddresses(NHLGamesMetro.DomainName)(0).ToString()
+                hasRedirection = serverIp.Equals(resolvedIp)
+            Catch ex As Exception
+            End Try
+            Return hasRedirection
+        End Function
+
         Private Sub SetPath()
-            _pathToProxy = $"{_folderPath}\{If (Environment.Is64BitOperatingSystem, "x64", "x86")}\{_exeName}"
+            _pathToProxy = $"{_folderPath}\{If(Environment.Is64BitOperatingSystem, "win64", "win86")}\{_exeName}"
         End Sub
 
         Public Function IsProxyFileFound() As Boolean
@@ -123,11 +136,12 @@ Namespace Utilities
         End Function
 
         Public Shared Async Function Ready() As Task(Of Boolean)
-            Return Not (NHLGamesMetro.FormInstance.ProxyListening Is Nothing OrElse Not Await NHLGamesMetro.FormInstance.ProxyListening)
+            Return Not (NHLGamesMetro.FormInstance.IsProxyListening Is Nothing OrElse Not Await NHLGamesMetro.FormInstance.IsProxyListening)
         End Function
 
         Public Sub SetEnvironmentVariableForMpv()
-            Environment.SetEnvironmentVariable("http_proxy", $"http://127.0.0.1:{port}/", EnvironmentVariableTarget.Process)
+            Environment.SetEnvironmentVariable("http_proxy", $"http://127.0.0.1:{port}", EnvironmentVariableTarget.Process)
+            Environment.SetEnvironmentVariable("https_proxy", $"https://127.0.0.1:{port}", EnvironmentVariableTarget.Process)
         End Sub
 
     End Class
