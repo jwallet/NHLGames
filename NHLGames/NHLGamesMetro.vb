@@ -41,6 +41,7 @@ Public Class NHLGamesMetro
     Public Shared IsServerUp As Boolean = Nothing
     Public IsProxyListening As Task(Of Boolean) = Nothing
     Public Shared IsHostsRedirectionSet As Boolean = False
+    Public Shared WatchArgs As GameWatchArguments = New GameWatchArguments
 
     <SecurityPermission(SecurityAction.Demand, Flags:=SecurityPermissionFlag.ControlAppDomain)>
     Public Shared Sub Main()

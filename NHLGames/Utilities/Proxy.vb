@@ -103,7 +103,7 @@ Namespace Utilities
         End Function
 
         Private Sub SetPath()
-            _pathToProxy = $"{_folderPath}\{If(Environment.Is64BitOperatingSystem, "win64", "win86")}\{_exeName}"
+            _pathToProxy = $"{_folderPath}\{_exeName}"
         End Sub
 
         Public Function IsProxyFileFound() As Boolean

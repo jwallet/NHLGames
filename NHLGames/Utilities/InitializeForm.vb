@@ -181,7 +181,7 @@ Namespace Utilities
             PopulateComboBox(Form.cbServers, SettingsEnum.SelectedServer, SettingsEnum.ServerList, String.Empty)
             Common.SetRedirectionServerInApp()
 
-            watchArgs = BindWatchArgsToForm(watchArgs)
+            NHLGamesMetro.WatchArgs = BindWatchArgsToForm(watchArgs)
 
             Dim adDetectionConfigs = ApplicationSettings.Read(Of AdDetectionConfigs)(SettingsEnum.AdDetection, Nothing)
 
