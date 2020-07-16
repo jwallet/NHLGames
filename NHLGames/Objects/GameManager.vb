@@ -60,7 +60,7 @@ Namespace Objects
                     .GameStateDetailed = game.status.detailedState
                 }
 
-                If currentGame.GameType = GameTypeEnum.Series Then
+                If currentGame.GameType = GameTypeEnum.Series AndAlso game.seriesSummary?.gameNumber IsNot Nothing Then
                     currentGame.SeriesGameNumber = game.seriesSummary?.gameNumber
                     currentGame.SeriesGameStatus = If(game.seriesSummary?.seriesStatusShort, String.Empty)
                 End If

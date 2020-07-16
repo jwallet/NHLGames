@@ -152,7 +152,7 @@ Namespace Controls
 
             If _game.GameType.Equals(GameTypeEnum.Preseason) Then
                 lblNotInSeason.Text = NHLGamesMetro.RmText.GetString("lblPreseason").ToUpper()
-            ElseIf _game.GameType.Equals(GameTypeEnum.Series) Then
+            ElseIf _game.GameType.Equals(GameTypeEnum.Series) AndAlso _game.SeriesGameNumber <> 0 Then
                 Dim seriesStatusShort =
                         String.Format(NHLGamesMetro.RmText.GetString("lblGame"), _game.SeriesGameNumber.ToString()).
                         ToUpper() 'Game 1
